@@ -8,17 +8,12 @@
     card_view:cardUseCompatPadding="false"
     card_view:cardBackgroundColor="@color/primaryBackground">
 
-    <FrameLayout
+    <com.example.everyonecoloringv3.core.view.SquareImageView
+        android:id="@+id/iv_preview"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
-        android:foreground="?attr/selectableItemBackgroundBorderless">
-
-        <ImageView
-            android:id="@+id/iv_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:background="@color/colorOutline"
-            android:contentDescription="Artwork" />
-    </FrameLayout>
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
+        android:background="@color/colorOutline"
+        android:contentDescription="Artwork" />
 </androidx.cardview.widget.CardView>
