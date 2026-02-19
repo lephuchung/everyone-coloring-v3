@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Remove active indicator background on BottomNavigationView -->
+    <style name="BottomNavNoIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@android:color/transparent</item>
+        <item name="android:alpha">0</item>
+    </style>
+</resources>

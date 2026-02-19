@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.everyonecoloringv3.feature.home.ui.HomeFragment"
+        android:label="Home">
+        <action
+            android:id="@+id/actionHomeToCreatePixel"
+            app:destination="@id/createPixelFragment" />
+        <action
+            android:id="@+id/actionHomeToGameplay"
+            app:destination="@id/gameplayFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/gameplayFragment"
+        android:name="com.example.everyonecoloringv3.feature.gameplay.ui.GameplayFragment"
+        android:label="Gameplay" />
+
+    <fragment
+        android:id="@+id/createPixelFragment"
+        android:name="com.example.everyonecoloringv3.feature.createpixel.ui.CreatePixelFragment"
+        android:label="Create Pixel" />
+
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="com.example.everyonecoloringv3.feature.user.ui.UserFragment"
+        android:label="User" />
+</navigation>

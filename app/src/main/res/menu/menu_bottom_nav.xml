@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Put home in the middle by ordering: user (left), home (center), create (right) -->
+    <item
+        android:id="@+id/userFragment"
+        android:icon="@drawable/ic_user"
+        android:title="User"
+        android:orderInCategory="1" />
+
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/ic_home"
+        android:title="Home"
+        android:orderInCategory="2" />
+
+    <item
+        android:id="@+id/createPixelFragment"
+        android:icon="@drawable/ic_create"
+        android:title="Create"
+        android:orderInCategory="3" />
+</menu>
