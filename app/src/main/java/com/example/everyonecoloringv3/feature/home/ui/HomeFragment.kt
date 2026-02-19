@@ -3,27 +3,36 @@ package com.example.everyonecoloringv3.feature.home.ui
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.everyonecoloringv3.R
 import com.example.everyonecoloringv3.core.domain.model.Artwork
 import com.example.everyonecoloringv3.core.domain.model.ColorPalette
 import com.example.everyonecoloringv3.core.domain.model.ColoringModeType
 import com.example.everyonecoloringv3.core.ui.BaseFragment
+import com.example.everyonecoloringv3.core.ui.zoom.GridZoomController
 import com.example.everyonecoloringv3.databinding.FragmentHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     private val viewModel: HomeViewModel by viewModels()
     private val adapter = SectionAdapter { artwork ->
         findNavController().navigate(HomeFragmentDirections.actionHomeToGameplay())
+    }
+    private val zoomController by lazy {
+        GridZoomController(requireContext(), minScale = 0.5f, maxScale = 2.0f) { scale ->
+            adapter.updateZoom(scale)
+        }
     }
 
     override fun createBinding(inflater: LayoutInflater, container: ViewGroup?) =
@@ -32,6 +41,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun setupUi() {
         binding.rvSections.layoutManager = LinearLayoutManager(requireContext())
         binding.rvSections.adapter = adapter
+        binding.rvSections.setOnTouchListener { _, event ->
+            val scaling = zoomController.onTouch(event)
+            if (scaling) {
+                binding.rvSections.stopScroll()
+            }
+            scaling
+        }
+        // Also listen on root to catch pinch starting outside RV items
+        binding.root.setOnTouchListener { _, event ->
+            zoomController.onTouch(event)
+            zoomController.isScaling
+        }
     }
 
     override fun setupObservers() {
@@ -63,10 +84,16 @@ private class SectionAdapter(
     private val onClick: (Artwork) -> Unit
 ) : RecyclerView.Adapter<SectionViewHolder>() {
     private val items = mutableListOf<ArtworkSection>()
+    private var zoomScale: Float = 1f
 
     fun submitList(sections: List<ArtworkSection>) {
         items.clear()
         items.addAll(sections)
+        notifyDataSetChanged()
+    }
+
+    fun updateZoom(scale: Float) {
+        zoomScale = scale
         notifyDataSetChanged()
     }
 
@@ -77,7 +104,7 @@ private class SectionAdapter(
     }
 
     override fun onBindViewHolder(holder: SectionViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[position], zoomScale)
     }
 
     override fun getItemCount(): Int = items.size
@@ -102,17 +129,26 @@ private class SectionViewHolder(
         binding.rvSectionItems.adapter = itemAdapter
     }
 
-    fun bind(section: ArtworkSection) {
+    fun bind(section: ArtworkSection, zoomScale: Float) {
         binding.tvSectionTitle.text = section.title
         itemAdapter.submitList(section.items)
-        binding.rvSectionItems.doOnLayout { rv ->
-            val available = rv.width - rv.paddingLeft - rv.paddingRight
-            if (available > 0) {
-                val span = (available / minItemSize).coerceIn(2, 6)
-                gridLayoutManager.spanCount = span
-                decoration.spanCount = span
-                (rv as? RecyclerView)?.invalidateItemDecorations()
+        val rv = binding.rvSectionItems
+        val applySpan: (Int) -> Unit = { available ->
+            val effectiveMin = max(1, (minItemSize * zoomScale).roundToInt())
+            val span = (available / effectiveMin).coerceIn(2, 6)
+            gridLayoutManager.spanCount = span
+            decoration.spanCount = span
+            rv.invalidateItemDecorations()
+        }
+        val availableNow = rv.width - rv.paddingLeft - rv.paddingRight
+        if (availableNow > 0) {
+            applySpan(availableNow)
+        } else {
+            rv.doOnLayout { view ->
+                val available = view.width - view.paddingLeft - view.paddingRight
+                if (available > 0) applySpan(available)
             }
+            rv.requestLayout()
         }
     }
 }
